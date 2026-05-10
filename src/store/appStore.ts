@@ -16,6 +16,14 @@ interface AppStore {
   xp: number;
   dailyGoalProgress: number;
   lastActiveDate: string | null;
+  sessionMode: 'words' | 'phrases';
+  phrasesProgress: {
+    known: number[];
+    errorCount: Record<number, number>;
+  };
+  setSessionMode: (mode: 'words' | 'phrases') => void;
+  markPhraseKnown: (id: number) => void;
+  markPhraseError: (id: number) => void;
   addXp: (amount: number) => void;
   incrementDailyGoal: () => void;
   checkStreak: () => void;
@@ -44,6 +52,28 @@ export const useAppStore = create<AppStore>()(
       xp: 0,
       dailyGoalProgress: 0,
       lastActiveDate: null,
+      sessionMode: 'words',
+      phrasesProgress: { known: [], errorCount: {} },
+      
+      setSessionMode: (mode) => set({ sessionMode: mode }),
+      
+      markPhraseKnown: (id) => set((state) => ({
+        phrasesProgress: {
+          ...state.phrasesProgress,
+          known: [...new Set([...state.phrasesProgress.known, id])]
+        }
+      })),
+
+      markPhraseError: (id) => set((state) => {
+        const currentCount = state.phrasesProgress.errorCount[id] || 0;
+        return {
+          phrasesProgress: {
+            ...state.phrasesProgress,
+            errorCount: { ...state.phrasesProgress.errorCount, [id]: currentCount + 1 }
+          }
+        };
+      }),
+
       addXp: (amount) => set((state) => ({ xp: state.xp + amount })),
       incrementDailyGoal: () => set((state) => ({ dailyGoalProgress: state.dailyGoalProgress + 1 })),
       checkStreak: () => set((state) => {
@@ -75,6 +105,7 @@ export const useAppStore = create<AppStore>()(
         xp: state.xp,
         dailyGoalProgress: state.dailyGoalProgress,
         lastActiveDate: state.lastActiveDate,
+        phrasesProgress: state.phrasesProgress,
       }),
     }
   )

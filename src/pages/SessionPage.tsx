@@ -3,14 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import { useWordStore } from '@/store/wordStore';
 import { words as allWords } from '@/data/words';
+import { phrases as allPhrases } from '@/data/phrases';
 import { useTelegramApp } from '@/hooks/useTelegramApp';
-import type { Word } from '@/types';
+import WordBuilder from '@/components/exercises/WordBuilder';
+import PhraseFill from '@/components/exercises/PhraseFill';
+import type { Word, Phrase } from '@/types';
 
-type SessionItem = Word & { exerciseType: 'flashcard' | 'quiz' };
+type WordSessionItem = Word & { mode: 'words'; exerciseType: 'flashcard' | 'quiz' | 'wordBuilder' };
+type PhraseSessionItem = Phrase & { mode: 'phrases'; exerciseType: 'flashcard' | 'phraseFill' };
+type SessionItem = WordSessionItem | PhraseSessionItem;
 
 const SessionPage: React.FC = () => {
   const { haptic } = useTelegramApp();
-  const { setTab, addXp, incrementDailyGoal } = useAppStore();
+  const { setTab, addXp, incrementDailyGoal, sessionMode, phrasesProgress, markPhraseKnown, markPhraseError } = useAppStore();
   const { known, errorCount, markKnown, markError } = useWordStore();
 
   const [queue, setQueue] = useState<SessionItem[]>([]);
@@ -26,29 +31,46 @@ const SessionPage: React.FC = () => {
 
   // Initialization
   useEffect(() => {
-    // Select 10 words
-    const weakWordIds = Object.keys(errorCount).map(Number).sort((a, b) => errorCount[b] - errorCount[a]);
-    const weakWords = allWords.filter(w => weakWordIds.includes(w.rank)).slice(0, 5);
-    
-    const newWords = allWords.filter(w => !known.includes(w.rank) && !weakWordIds.includes(w.rank))
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 10 - weakWords.length);
-    
-    const sessionWords = [...weakWords, ...newWords].sort(() => Math.random() - 0.5);
-    
-    if (sessionWords.length === 0) {
-      setIsFinished(true);
-      return;
+    if (sessionMode === 'words') {
+      const weakWordIds = Object.keys(errorCount).map(Number).sort((a, b) => errorCount[b] - errorCount[a]);
+      const weakWords = allWords.filter(w => weakWordIds.includes(w.rank)).slice(0, 5);
+      const newWords = allWords.filter(w => !known.includes(w.rank) && !weakWordIds.includes(w.rank))
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 10 - weakWords.length);
+      
+      const sessionWords = [...weakWords, ...newWords].sort(() => Math.random() - 0.5);
+      if (sessionWords.length === 0) { setIsFinished(true); return; }
+
+      const initialQueue = sessionWords.map(w => {
+        const r = Math.random();
+        const type = r > 0.66 ? 'wordBuilder' : (r > 0.33 ? 'quiz' : 'flashcard');
+        return { ...w, mode: 'words', exerciseType: type } as WordSessionItem;
+      });
+      setQueue(initialQueue);
+      setTotalItems(initialQueue.length);
+
+    } else {
+      // Phrases mode
+      const pErrorCount = phrasesProgress.errorCount;
+      const pKnown = phrasesProgress.known;
+      const weakIds = Object.keys(pErrorCount).map(Number).sort((a, b) => pErrorCount[b] - pErrorCount[a]);
+      const weakPhrases = allPhrases.filter(p => weakIds.includes(p.id)).slice(0, 5);
+      const newPhrases = allPhrases.filter(p => !pKnown.includes(p.id) && !weakIds.includes(p.id))
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 10 - weakPhrases.length);
+      
+      const sessionPhrases = [...weakPhrases, ...newPhrases].sort(() => Math.random() - 0.5);
+      if (sessionPhrases.length === 0) { setIsFinished(true); return; }
+
+      const initialQueue = sessionPhrases.map(p => ({
+        ...p,
+        mode: 'phrases',
+        exerciseType: Math.random() > 0.5 ? 'phraseFill' : 'flashcard'
+      })) as PhraseSessionItem[];
+      setQueue(initialQueue);
+      setTotalItems(initialQueue.length);
     }
-
-    const initialQueue = sessionWords.map(w => ({
-      ...w,
-      exerciseType: Math.random() > 0.5 ? 'quiz' : 'flashcard'
-    })) as SessionItem[];
-
-    setQueue(initialQueue);
-    setTotalItems(initialQueue.length);
-  }, []);
+  }, [sessionMode]);
 
   const currentItem = queue[0];
   const progressPercent = totalItems > 0 ? Math.round(((totalItems - queue.length) / totalItems) * 100) : 0;
@@ -57,20 +79,26 @@ const SessionPage: React.FC = () => {
   useEffect(() => {
     if (currentItem?.exerciseType === 'quiz') {
       const distractors = allWords
-        .filter(w => w.rank !== currentItem.rank)
+        .filter(w => w.rank !== (currentItem as WordSessionItem).rank)
         .sort(() => Math.random() - 0.5)
         .slice(0, 3);
-      setQuizOptions([currentItem, ...distractors].sort(() => Math.random() - 0.5));
+      setQuizOptions([(currentItem as WordSessionItem), ...distractors].sort(() => Math.random() - 0.5));
       setAnsweredId(null);
       setIsErrorState(false);
     } else if (currentItem?.exerciseType === 'flashcard') {
       setFlashcardRevealed(false);
+    } else if (currentItem?.exerciseType === 'wordBuilder' || currentItem?.exerciseType === 'phraseFill') {
+      setIsErrorState(false);
     }
   }, [currentItem]);
 
   const handleCorrect = () => {
     haptic('success');
-    markKnown(currentItem.rank);
+    if (currentItem.mode === 'words') {
+      markKnown(currentItem.rank);
+    } else {
+      markPhraseKnown(currentItem.id);
+    }
     setTimeout(() => {
       const newQueue = queue.slice(1);
       if (newQueue.length === 0) {
@@ -84,7 +112,11 @@ const SessionPage: React.FC = () => {
   const handleIncorrect = () => {
     haptic('error');
     setIsErrorState(true);
-    markError(currentItem.rank);
+    if (currentItem.mode === 'words') {
+      markError(currentItem.rank);
+    } else {
+      markPhraseError(currentItem.id);
+    }
     setTimeout(() => {
       // Move current to back of queue
       setQueue(prev => {
@@ -156,7 +188,7 @@ const SessionPage: React.FC = () => {
         <AnimatePresence mode="wait">
           {currentItem && (
             <motion.div
-              key={`${currentItem.rank}-${progressPercent}`}
+              key={`${currentItem.mode === 'words' ? currentItem.rank : currentItem.id}-${progressPercent}`}
               initial={{ x: 50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -50, opacity: 0 }}
@@ -165,12 +197,14 @@ const SessionPage: React.FC = () => {
               {currentItem.exerciseType === 'flashcard' ? (
                 // Type 1: Flashcard
                 <div className="flex-1 flex flex-col justify-center">
-                  <h2 className="text-xl font-bold text-white/50 mb-8 text-center">Запомните слово</h2>
+                  <h2 className="text-xl font-bold text-white/50 mb-8 text-center">Запомните {currentItem.mode === 'words' ? 'слово' : 'фразу'}</h2>
                   <div 
                     className="flex-1 flex flex-col items-center justify-center bg-[var(--tg-theme-secondary-bg-color,#1a1a2e)] rounded-3xl border-2 border-white/5 p-8 text-center shadow-lg"
                     onClick={() => { if (!flashcardRevealed) { setFlashcardRevealed(true); haptic('light'); } }}
                   >
-                    <div className="text-4xl font-black text-white mb-2">{currentItem.greek}</div>
+                    <div className="text-4xl font-black text-white mb-2 leading-tight">
+                      {currentItem.mode === 'words' ? currentItem.greek : currentItem.el}
+                    </div>
                     <div className="text-hint italic mb-8">[{currentItem.transcription}]</div>
                     
                     {flashcardRevealed ? (
@@ -179,7 +213,7 @@ const SessionPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-2xl font-bold text-green-400"
                       >
-                        {currentItem.russian_translation}
+                        {currentItem.mode === 'words' ? currentItem.russian_translation : currentItem.ru}
                       </motion.div>
                     ) : (
                       <div className="text-sm text-hint uppercase tracking-widest opacity-50 mt-auto">
@@ -202,17 +236,17 @@ const SessionPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              ) : (
+              ) : currentItem.exerciseType === 'quiz' ? (
                 // Type 2: Quiz
                 <div className="flex-1 flex flex-col">
                   <h2 className="text-xl font-bold text-white/50 mb-6 mt-4">Выберите правильный перевод</h2>
-                  <div className="text-4xl font-black text-white mb-2">{currentItem.greek}</div>
+                  <div className="text-4xl font-black text-white mb-2 leading-tight">{(currentItem as WordSessionItem).greek}</div>
                   <div className="text-hint italic mb-10">[{currentItem.transcription}]</div>
 
                   <div className={`grid grid-cols-1 gap-3 ${isErrorState ? 'animate-shake' : ''}`}>
                     {quizOptions.map(opt => {
                       const isSelected = answeredId === opt.rank;
-                      const isCorrectOpt = opt.rank === currentItem.rank;
+                      const isCorrectOpt = opt.rank === (currentItem as WordSessionItem).rank;
                       
                       let btnStyle = 'bg-[var(--tg-theme-secondary-bg-color,#1a1a2e)] border-white/5 text-white';
                       
@@ -243,6 +277,22 @@ const SessionPage: React.FC = () => {
                     })}
                   </div>
                 </div>
+              ) : currentItem.exerciseType === 'wordBuilder' ? (
+                // Type 3: Word Builder
+                <WordBuilder
+                  word={currentItem as WordSessionItem}
+                  onCorrect={handleCorrect}
+                  onIncorrect={handleIncorrect}
+                  isErrorState={isErrorState}
+                />
+              ) : (
+                // Type 4: Phrase Fill
+                <PhraseFill
+                  phrase={currentItem as PhraseSessionItem}
+                  onCorrect={handleCorrect}
+                  onIncorrect={handleIncorrect}
+                  isErrorState={isErrorState}
+                />
               )}
             </motion.div>
           )}

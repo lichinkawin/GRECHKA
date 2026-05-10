@@ -6,7 +6,7 @@ import { useTelegramApp } from '@/hooks/useTelegramApp';
 
 const HomePage: React.FC = () => {
   const { haptic } = useTelegramApp();
-  const { streak, xp, dailyGoalProgress, setTab } = useAppStore();
+  const { streak, xp, dailyGoalProgress, setTab, setSessionMode } = useAppStore();
   const { errorCount } = useWordStore();
 
   const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Студент';
@@ -17,12 +17,20 @@ const HomePage: React.FC = () => {
   }, []);
 
   const handleStartSession = () => {
+    setSessionMode('words');
     haptic('medium');
     setTab('session');
   };
 
   const handleReviewWeak = () => {
     if (weakWordsCount === 0) return;
+    setSessionMode('words');
+    haptic('medium');
+    setTab('session');
+  };
+
+  const handlePhrasesSession = () => {
+    setSessionMode('phrases');
     haptic('medium');
     setTab('session');
   };
@@ -109,12 +117,12 @@ const HomePage: React.FC = () => {
 
           <motion.button 
             whileTap={{ scale: 0.95 }}
-            onClick={() => { haptic('light'); setTab('phrases'); }}
+            onClick={handlePhrasesSession}
             className="flex flex-col items-start p-5 bg-[var(--tg-theme-secondary-bg-color,#1a1a2e)] rounded-3xl border-2 border-white/5 active:border-[var(--tg-theme-button-color,#6c63ff)] transition-colors text-left"
           >
             <div className="text-4xl mb-3">✈️</div>
             <div className="font-bold text-[var(--tg-theme-text-color,#fff)]">Фразы</div>
-            <div className="text-xs text-[var(--tg-theme-hint-color,#9b9bb4)] mt-1">Для поездок</div>
+            <div className="text-xs text-[var(--tg-theme-hint-color,#9b9bb4)] mt-1">Интерактив</div>
           </motion.button>
 
           <div className="flex flex-col items-start p-5 bg-black/20 rounded-3xl border-2 border-white/5 opacity-70 text-left relative overflow-hidden">
