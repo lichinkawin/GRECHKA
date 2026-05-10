@@ -17,11 +17,13 @@ interface AppStore {
   dailyGoalProgress: number;
   lastActiveDate: string | null;
   sessionMode: 'words' | 'phrases';
+  sessionCategory: string | null;
   phrasesProgress: {
     known: number[];
     errorCount: Record<number, number>;
   };
   setSessionMode: (mode: 'words' | 'phrases') => void;
+  setSessionCategory: (cat: string | null) => void;
   markPhraseKnown: (id: number) => void;
   markPhraseError: (id: number) => void;
   addXp: (amount: number) => void;
@@ -53,9 +55,11 @@ export const useAppStore = create<AppStore>()(
       dailyGoalProgress: 0,
       lastActiveDate: null,
       sessionMode: 'words',
+      sessionCategory: null,
       phrasesProgress: { known: [], errorCount: {} },
       
       setSessionMode: (mode) => set({ sessionMode: mode }),
+      setSessionCategory: (cat) => set({ sessionCategory: cat }),
       
       markPhraseKnown: (id) => set((state) => ({
         phrasesProgress: {

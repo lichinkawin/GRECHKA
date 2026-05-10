@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import { useWordStore } from '@/store/wordStore';
 import { useTelegramApp } from '@/hooks/useTelegramApp';
+import { categories as wordCategories } from '@/data/words';
+import { phraseCategories } from '@/data/phrases';
 
 const HomePage: React.FC = () => {
   const { haptic } = useTelegramApp();
@@ -12,11 +14,15 @@ const HomePage: React.FC = () => {
   const telegramUser = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Студент';
   const weakWordsCount = Object.keys(errorCount).length;
 
+  const [bottomSheetMode, setBottomSheetMode] = useState<'words' | 'phrases' | null>(null);
+
   useEffect(() => {
     useAppStore.getState().checkStreak();
   }, []);
 
   const handleStartSession = () => {
+    // Start mixed review for daily goal
+    useAppStore.getState().setSessionCategory(null);
     setSessionMode('words');
     haptic('medium');
     setTab('session');
@@ -24,14 +30,22 @@ const HomePage: React.FC = () => {
 
   const handleReviewWeak = () => {
     if (weakWordsCount === 0) return;
+    useAppStore.getState().setSessionCategory(null);
     setSessionMode('words');
     haptic('medium');
     setTab('session');
   };
 
-  const handlePhrasesSession = () => {
-    setSessionMode('phrases');
+  const handleOpenCategorySheet = (mode: 'words' | 'phrases') => {
+    haptic('light');
+    setBottomSheetMode(mode);
+  };
+
+  const handleStartCategorySession = (categoryFilter: string | null) => {
     haptic('medium');
+    setSessionMode(bottomSheetMode!);
+    useAppStore.getState().setSessionCategory(categoryFilter);
+    setBottomSheetMode(null);
     setTab('session');
   };
 
@@ -95,12 +109,12 @@ const HomePage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <motion.button 
             whileTap={{ scale: 0.95 }}
-            onClick={() => { haptic('light'); setTab('session'); }}
+            onClick={() => handleOpenCategorySheet('words')}
             className="flex flex-col items-start p-5 bg-[var(--tg-theme-secondary-bg-color,#1a1a2e)] rounded-3xl border-2 border-white/5 active:border-[var(--tg-theme-button-color,#6c63ff)] transition-colors text-left"
           >
             <div className="text-4xl mb-3">📚</div>
-            <div className="font-bold text-[var(--tg-theme-text-color,#fff)]">Новые слова</div>
-            <div className="text-xs text-[var(--tg-theme-hint-color,#9b9bb4)] mt-1">Изучай базу</div>
+            <div className="font-bold text-[var(--tg-theme-text-color,#fff)]">Слова</div>
+            <div className="text-xs text-[var(--tg-theme-hint-color,#9b9bb4)] mt-1">По категориям</div>
           </motion.button>
 
           <motion.button 
@@ -117,7 +131,7 @@ const HomePage: React.FC = () => {
 
           <motion.button 
             whileTap={{ scale: 0.95 }}
-            onClick={handlePhrasesSession}
+            onClick={() => handleOpenCategorySheet('phrases')}
             className="flex flex-col items-start p-5 bg-[var(--tg-theme-secondary-bg-color,#1a1a2e)] rounded-3xl border-2 border-white/5 active:border-[var(--tg-theme-button-color,#6c63ff)] transition-colors text-left"
           >
             <div className="text-4xl mb-3">✈️</div>
@@ -133,6 +147,55 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Category Bottom Sheet */}
+      <AnimatePresence>
+        {bottomSheetMode && (
+          <React.Fragment>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setBottomSheetMode(null)}
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--tg-theme-bg-color,#0f0f1a)] rounded-t-3xl border-t border-white/10 max-h-[85vh] overflow-y-auto"
+            >
+              <div className="sticky top-0 bg-[var(--tg-theme-bg-color,#0f0f1a)]/90 backdrop-blur-md px-6 pt-4 pb-4 border-b border-white/5 z-10 flex justify-between items-center">
+                <h3 className="text-xl font-bold text-white">
+                  Выберите категорию
+                </h3>
+                <button
+                  onClick={() => setBottomSheetMode(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white/50 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="p-4 grid gap-3 pb-safe">
+                {(bottomSheetMode === 'words' ? wordCategories : phraseCategories).map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleStartCategorySession(cat.filter)}
+                    className="w-full flex items-center justify-between p-4 bg-[var(--tg-theme-secondary-bg-color,#1a1a2e)] rounded-2xl border border-white/5 active:scale-[0.98] transition-transform"
+                  >
+                    <span className="font-bold text-[var(--tg-theme-text-color,#fff)] text-lg">
+                      {cat.name}
+                    </span>
+                    <span className="text-xl opacity-50">→</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </React.Fragment>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

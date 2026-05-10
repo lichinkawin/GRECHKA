@@ -31,10 +31,14 @@ const SessionPage: React.FC = () => {
 
   // Initialization
   useEffect(() => {
+    const activeCategory = useAppStore.getState().sessionCategory;
+
     if (sessionMode === 'words') {
+      const filteredWords = activeCategory ? allWords.filter(w => w.category === activeCategory) : allWords;
       const weakWordIds = Object.keys(errorCount).map(Number).sort((a, b) => errorCount[b] - errorCount[a]);
-      const weakWords = allWords.filter(w => weakWordIds.includes(w.rank)).slice(0, 5);
-      const newWords = allWords.filter(w => !known.includes(w.rank) && !weakWordIds.includes(w.rank))
+      
+      const weakWords = filteredWords.filter(w => weakWordIds.includes(w.rank)).slice(0, 5);
+      const newWords = filteredWords.filter(w => !known.includes(w.rank) && !weakWordIds.includes(w.rank))
         .sort(() => Math.random() - 0.5)
         .slice(0, 10 - weakWords.length);
       
@@ -51,11 +55,13 @@ const SessionPage: React.FC = () => {
 
     } else {
       // Phrases mode
+      const filteredPhrases = activeCategory ? allPhrases.filter(p => p.category === activeCategory) : allPhrases;
       const pErrorCount = phrasesProgress.errorCount;
       const pKnown = phrasesProgress.known;
       const weakIds = Object.keys(pErrorCount).map(Number).sort((a, b) => pErrorCount[b] - pErrorCount[a]);
-      const weakPhrases = allPhrases.filter(p => weakIds.includes(p.id)).slice(0, 5);
-      const newPhrases = allPhrases.filter(p => !pKnown.includes(p.id) && !weakIds.includes(p.id))
+      
+      const weakPhrases = filteredPhrases.filter(p => weakIds.includes(p.id)).slice(0, 5);
+      const newPhrases = filteredPhrases.filter(p => !pKnown.includes(p.id) && !weakIds.includes(p.id))
         .sort(() => Math.random() - 0.5)
         .slice(0, 10 - weakPhrases.length);
       
@@ -169,17 +175,24 @@ const SessionPage: React.FC = () => {
       <div className="px-4 py-6 flex items-center gap-4">
         <button 
           onClick={() => setShowExitConfirm(true)}
-          className="text-[var(--tg-theme-hint-color,#9b9bb4)] text-2xl opacity-60 hover:opacity-100"
+          className="text-[var(--tg-theme-hint-color,#9b9bb4)] text-2xl opacity-60 hover:opacity-100 shrink-0"
         >
           ✕
         </button>
-        <div className="flex-1 h-4 bg-black/20 rounded-full overflow-hidden border border-white/5">
-          <motion.div 
-            className="h-full bg-green-500 rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${progressPercent}%` }}
-            transition={{ type: 'spring' }}
-          />
+        <div className="flex-1 flex flex-col gap-2">
+          {useAppStore.getState().sessionCategory && (
+             <div className="text-center text-xs font-bold text-[var(--tg-theme-button-color,#6c63ff)] uppercase tracking-widest opacity-80">
+               Категория: {useAppStore.getState().sessionCategory}
+             </div>
+          )}
+          <div className="w-full h-4 bg-black/20 rounded-full overflow-hidden border border-white/5">
+            <motion.div 
+              className="h-full bg-green-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ type: 'spring' }}
+            />
+          </div>
         </div>
       </div>
 
