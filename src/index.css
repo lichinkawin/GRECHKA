@@ -1,0 +1,487 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────────────────── */
+:root {
+  /* Telegram theme fallbacks (overridden by JS from TG) */
+  --tg-theme-bg-color: #0f0f1a;
+  --tg-theme-secondary-bg-color: #1a1a2e;
+  --tg-theme-text-color: #ffffff;
+  --tg-theme-hint-color: #9b9bb4;
+  --tg-theme-button-color: #6c63ff;
+  --tg-theme-button-text-color: #ffffff;
+
+  /* App palette */
+  --color-bg: var(--tg-theme-bg-color);
+  --color-surface: var(--tg-theme-secondary-bg-color);
+  --color-text: var(--tg-theme-text-color);
+  --color-hint: var(--tg-theme-hint-color);
+  --color-accent: var(--tg-theme-button-color);
+  --color-accent-text: var(--tg-theme-button-text-color);
+
+  /* Swipe feedback */
+  --color-known: #22c55e;
+  --color-review: #ef4444;
+
+  /* Spacing & radius */
+  --radius-card: 24px;
+  --radius-btn: 14px;
+
+  /* Typography */
+  --font-greek: 2rem;
+  --font-trans: 1rem;
+  --font-ru: 1.25rem;
+}
+
+@theme {
+  --color-accent: var(--color-accent);
+  --color-hint: var(--color-hint);
+  --color-known: var(--color-known);
+  --color-review: var(--color-review);
+  --color-page-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ─── Reset & Base ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* ─── App Layout ─────────────────────────────────────────────────── */
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ─── Bottom Navigation ──────────────────────────────────────────── */
+.bottom-nav {
+  display: flex;
+  background: var(--color-surface);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  flex-shrink: 0;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0 12px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  color: var(--color-hint);
+  background: none;
+  border: none;
+  font-family: inherit;
+  gap: 4px;
+}
+
+.nav-item.active {
+  color: var(--color-accent);
+}
+
+.nav-item-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.nav-item-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Page ───────────────────────────────────────────────────────── */
+.page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px 0;
+  overflow: hidden;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-hint);
+  margin-bottom: 20px;
+}
+
+/* ─── Flashcard ──────────────────────────────────────────────────── */
+.card-arena {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.flashcard {
+  position: absolute;
+  width: calc(100% - 24px);
+  max-width: 360px;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: grab;
+  will-change: transform;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.flashcard:active { cursor: grabbing; }
+
+.card-rank {
+  font-size: 0.75rem;
+  color: var(--color-hint);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+
+.card-greek {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.card-transcription {
+  font-size: 0.9rem;
+  color: var(--color-hint);
+  letter-spacing: 0.03em;
+}
+
+.card-divider {
+  width: 40px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin: 8px 0;
+}
+
+.card-translation {
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.card-translation.hidden {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+.card-tap-hint {
+  font-size: 0.75rem;
+  color: var(--color-hint);
+  opacity: 0.6;
+}
+
+/* Swipe overlays */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+
+.card-overlay-known {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-known);
+  border: 2px solid var(--color-known);
+}
+
+.card-overlay-review {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-review);
+  border: 2px solid var(--color-review);
+}
+
+/* Card action buttons */
+.card-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 16px 0 24px;
+  flex-shrink: 0;
+}
+
+.card-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+
+.card-btn:active { transform: scale(0.9); }
+
+.card-btn-review {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-review);
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
+}
+
+.card-btn-speak {
+  background: rgba(108, 99, 255, 0.15);
+  color: var(--color-accent);
+  width: 48px;
+  height: 48px;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 20px rgba(108, 99, 255, 0.2);
+}
+
+.card-btn-known {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-known);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
+}
+
+/* ─── Progress Bar Circular ──────────────────────────────────────── */
+.progress-circle {
+  filter: drop-shadow(0 0 20px rgba(108, 99, 255, 0.4));
+}
+
+/* ─── Phrase Card ────────────────────────────────────────────────── */
+.phrase-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 16px;
+}
+
+.phrase-list::-webkit-scrollbar { display: none; }
+
+.phrase-card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.phrase-card:active { transform: scale(0.98); }
+
+.phrase-greek {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.phrase-trans {
+  font-size: 0.8rem;
+  color: var(--color-hint);
+  font-style: italic;
+}
+
+.phrase-russian {
+  font-size: 0.95rem;
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.phrase-speak-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(108, 99, 255, 0.15);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.phrase-speak-btn:active { transform: scale(0.85); }
+
+/* Category filter */
+.category-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-scroll::-webkit-scrollbar { display: none; }
+
+.category-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--color-hint);
+  font-family: inherit;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.category-chip.active {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border-color: var(--color-accent);
+}
+
+/* ─── Progress Page ──────────────────────────────────────────────── */
+.progress-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding-top: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--color-hint);
+  margin-top: 4px;
+}
+
+.stat-value.known { color: var(--color-known); }
+.stat-value.review { color: var(--color-review); }
+.stat-value.accent { color: var(--color-accent); }
+
+/* ─── Animations ─────────────────────────────────────────────────── */
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-pop-in { animation: pop-in 0.3s ease; }
+.animate-slide-up { animation: slide-up 0.3s ease; }
+
+/* ─── Done State ──────────────────────────────────────────────────── */
+.done-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 32px;
+  animation: pop-in 0.4s ease;
+}
+
+.done-emoji { font-size: 4rem; }
+.done-title { font-size: 1.5rem; font-weight: 700; }
+.done-subtitle { font-size: 0.9rem; color: var(--color-hint); }
+
+.btn-primary {
+  padding: 14px 32px;
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  border: none;
+  border-radius: var(--radius-btn);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  margin-top: 8px;
+}
+
+.btn-primary:active { transform: scale(0.96); opacity: 0.9; }
