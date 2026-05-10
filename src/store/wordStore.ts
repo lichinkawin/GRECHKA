@@ -2,17 +2,20 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { words } from '@/data/words';
 import type { Word } from '@/types';
+import { useAppStore } from './appStore';
 
 interface WordStore {
   words: Word[];
   known: number[];
   review: number[];
+  errorCount: Record<number, number>;
   currentIndex: number;
   activeRange: [number, number];
   activeFilter: string | null;
   setRange: (range: [number, number], filter?: string | null) => void;
   markKnown: (rank: number) => void;
   markReview: (rank: number) => void;
+  markError: (rank: number) => void;
   nextCard: () => void;
   resetProgress: () => void;
 }
@@ -20,7 +23,10 @@ interface WordStore {
 // Priority queue: review words first, then by rank, filtered by range/filter
 const buildQueue = (words: Word[], review: number[], range: [number, number], filter: string | null): Word[] => {
   let filtered = words.filter(w => w.rank >= range[0] && w.rank <= range[1]);
-  if (filter) {
+  if (filter === '⭐ Избранное') {
+    const favs = useAppStore.getState().favoriteWords;
+    filtered = words.filter(w => favs.includes(w.rank));
+  } else if (filter) {
     filtered = filtered.filter(w => (w as any).category === filter);
   }
   const reviewSet = new Set(review);
@@ -35,6 +41,7 @@ export const useWordStore = create<WordStore>()(
       words: buildQueue(words, [], [1, 100], null),
       known: [],
       review: [],
+      errorCount: {},
       currentIndex: 0,
       activeRange: [1, 100],
       activeFilter: null,
@@ -63,9 +70,20 @@ export const useWordStore = create<WordStore>()(
       markReview: (rank) => {
         set((state) => {
           const newReview = [...new Set([...state.review, rank])];
+          const currentCount = state.errorCount[rank] || 0;
           return {
             review: newReview,
+            errorCount: { ...state.errorCount, [rank]: currentCount + 1 },
             currentIndex: state.currentIndex + 1,
+          };
+        });
+      },
+
+      markError: (rank) => {
+        set((state) => {
+          const currentCount = state.errorCount[rank] || 0;
+          return {
+            errorCount: { ...state.errorCount, [rank]: currentCount + 1 },
           };
         });
       },
@@ -83,6 +101,7 @@ export const useWordStore = create<WordStore>()(
       partialize: (state) => ({
         known: state.known,
         review: state.review,
+        errorCount: state.errorCount,
         currentIndex: state.currentIndex,
       }),
     }

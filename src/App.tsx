@@ -4,6 +4,7 @@ import BottomNav from '@/components/BottomNav';
 import { useAppStore } from '@/store/appStore';
 import { useTelegramApp } from '@/hooks/useTelegramApp';
 
+const HomePage = lazy(() => import('@/pages/HomePage'));
 const WordsPage = lazy(() => import('@/pages/WordsPage'));
 const PhrasesPage = lazy(() => import('@/pages/PhrasesPage'));
 const ExercisesPage = lazy(() => import('@/pages/ExercisesPage'));
@@ -33,9 +34,21 @@ const App: React.FC = () => {
       <div className="app-content">
         <Suspense fallback={<PageFallback />}>
           <AnimatePresence mode="wait">
-            {activeTab === 'words' && (
+            {activeTab === 'home' && (
               <motion.div
-                key="words"
+                key="home"
+                style={{ position: 'absolute', inset: 0 }}
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.2 }}
+              >
+                <HomePage />
+              </motion.div>
+            )}
+            {activeTab === 'explore' && (
+              <motion.div
+                key="explore"
                 style={{ position: 'absolute', inset: 0 }}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}

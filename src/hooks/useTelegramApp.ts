@@ -5,6 +5,11 @@ declare global {
   interface Window {
     Telegram?: {
       WebApp: {
+        initDataUnsafe?: {
+          user?: {
+            first_name?: string;
+          };
+        };
         ready: () => void;
         expand: () => void;
         colorScheme: 'light' | 'dark';
@@ -61,8 +66,12 @@ export const useTelegramApp = () => {
     }
   }, [setTelegramEnv]);
 
-  const haptic = (style: 'light' | 'medium' | 'heavy' = 'medium') => {
-    window.Telegram?.WebApp?.HapticFeedback?.impactOccurred(style);
+  const haptic = (style: 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'warning' = 'medium') => {
+    if (['success', 'error', 'warning'].includes(style)) {
+      window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred(style as any);
+    } else {
+      window.Telegram?.WebApp?.HapticFeedback?.impactOccurred(style as any);
+    }
   };
 
   return { haptic };

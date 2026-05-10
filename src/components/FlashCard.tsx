@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import type { Word } from '@/types';
-import { useSpeech } from '@/hooks/useSpeech';
 
 interface FlashCardProps {
   word: Word;
@@ -14,7 +13,6 @@ const SWIPE_THRESHOLD = 80;
 
 const FlashCard: React.FC<FlashCardProps> = ({ word, onKnown, onReview, haptic }) => {
   const [revealed, setRevealed] = useState(false);
-  const { speak } = useSpeech();
 
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-15, 15]);
@@ -131,10 +129,9 @@ const FlashCard: React.FC<FlashCardProps> = ({ word, onKnown, onReview, haptic }
 interface CardActionsProps {
   onReview: () => void;
   onKnown: () => void;
-  onSpeak: () => void;
 }
 
-export const CardActions: React.FC<CardActionsProps> = ({ onReview, onKnown, onSpeak }) => (
+export const CardActions: React.FC<CardActionsProps> = ({ onReview, onKnown }) => (
   <div className="card-actions">
     <button
       id="btn-review"
@@ -143,14 +140,6 @@ export const CardActions: React.FC<CardActionsProps> = ({ onReview, onKnown, onS
       aria-label="Повторить позже"
     >
       ↩
-    </button>
-    <button
-      id="btn-speak"
-      className="card-btn card-btn-speak"
-      onClick={onSpeak}
-      aria-label="Произношение"
-    >
-      🔊
     </button>
     <button
       id="btn-known"

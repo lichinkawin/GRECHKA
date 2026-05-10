@@ -71,7 +71,7 @@ html, body, #root {
 
 .app-content {
   flex: 1;
-  overflow: hidden;
+  overflow: hidden; /* Keep content clipped, but children can scroll */
   position: relative;
 }
 
@@ -122,7 +122,9 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   padding: 20px 16px 0;
-  overflow: hidden;
+  overflow-y: auto; /* Enable vertical scroll */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .page-title {
@@ -298,10 +300,6 @@ html, body, #root {
 /* ─── Phrase Card ────────────────────────────────────────────────── */
 .phrase-list {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -404,7 +402,6 @@ html, body, #root {
   align-items: center;
   gap: 24px;
   padding-top: 24px;
-  overflow-y: auto;
   flex: 1;
 }
 
@@ -452,6 +449,16 @@ html, body, #root {
 
 .animate-pop-in { animation: pop-in 0.3s ease; }
 .animate-slide-up { animation: slide-up 0.3s ease; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out 0s 2;
+}
 
 /* ─── Done State ──────────────────────────────────────────────────── */
 .done-screen {

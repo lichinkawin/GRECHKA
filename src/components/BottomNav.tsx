@@ -2,10 +2,9 @@ import React from 'react';
 import { useAppStore } from '@/store/appStore';
 
 const TABS = [
-  { id: 'words' as const, icon: '📚', label: 'Слова' },
-  { id: 'phrases' as const, icon: '💬', label: 'Фразы' },
-  { id: 'exercises' as const, icon: '🎯', label: 'Игры' },
-  { id: 'progress' as const, icon: '📊', label: 'Прогресс' },
+  { id: 'home' as const, icon: '🏠', label: 'Главная' },
+  { id: 'explore' as const, icon: '🔍', label: 'Словарь' },
+  { id: 'progress' as const, icon: '👤', label: 'Профиль' },
 ];
 
 const BottomNav: React.FC = () => {

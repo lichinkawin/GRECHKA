@@ -8,9 +8,10 @@ export interface Word {
 export interface Phrase {
   id: number;
   category: string;
-  greek: string;
+  subcategory: string;
+  el: string;
   transcription: string;
-  russian: string;
+  ru: string;
 }
 
 export type SwipeDirection = 'left' | 'right' | null;
