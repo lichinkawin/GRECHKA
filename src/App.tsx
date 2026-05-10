@@ -6,9 +6,7 @@ import { useTelegramApp } from '@/hooks/useTelegramApp';
 
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const SessionPage = lazy(() => import('@/pages/SessionPage'));
-const WordsPage = lazy(() => import('@/pages/WordsPage'));
-const PhrasesPage = lazy(() => import('@/pages/PhrasesPage'));
-const ExercisesPage = lazy(() => import('@/pages/ExercisesPage'));
+const ExplorePage = lazy(() => import('@/pages/ExplorePage'));
 const ProgressPage = lazy(() => import('@/pages/ProgressPage'));
 
 const PageFallback = () => (
@@ -56,33 +54,10 @@ const App: React.FC = () => {
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
               >
-                <WordsPage haptic={haptic} />
+                <ExplorePage haptic={haptic} />
               </motion.div>
             )}
-            {activeTab === 'phrases' && (
-              <motion.div
-                key="phrases"
-                style={{ position: 'absolute', inset: 0 }}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <PhrasesPage />
-              </motion.div>
-            )}
-            {activeTab === 'exercises' && (
-              <motion.div
-                key="exercises"
-                style={{ position: 'absolute', inset: 0 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                <ExercisesPage />
-              </motion.div>
-            )}
+
             {activeTab === 'progress' && (
               <motion.div
                 key="progress"

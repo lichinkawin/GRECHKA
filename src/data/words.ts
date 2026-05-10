@@ -45,14 +45,15 @@ export const words: Word[] = mostCommonWords.map(w => {
   // Enhanced heuristic categorization
   if ([18, 19, 20, 23, 24, 33, 34, 47].includes(w.rank) || ru.includes('сказать') || ru.includes('говорить') || ru.includes('слово') || ru.includes('вопрос')) category = 'Общение';
   if ([43, 31, 35].includes(w.rank) || ru.includes('время') || ru.includes('год') || ru.includes('день') || ru.includes('сегодня') || ru.includes('вчера') || ru.includes('завтра') || ru.includes('утро') || ru.includes('вечер')) category = 'Время';
-  if (ru.includes('кафе') || ru.includes('вода') || ru.includes('еда') || ru.includes('пить') || ru.includes('есть')) category = 'Еда';
-  if (ru.includes('дом') || ru.includes('место') || ru.includes('город') || ru.includes('страна') || ru.includes('путь') || ru.includes('школа') || ru.includes('комната')) category = 'Места';
-  if (ru.includes('семья') || ru.includes('мать') || ru.includes('отец') || ru.includes('сын') || ru.includes('дочь') || ru.includes('друг') || ru.includes('ребенок') || ru.includes('жена') || ru.includes('муж')) category = 'Семья';
+  if ((w.rank >= 151 && w.rank <= 166) || ru.includes('кафе') || ru.includes('вода') || ru.includes('еда') || ru.includes('пить') || ru.includes('есть')) category = 'Еда';
+  if ((w.rank >= 167 && w.rank <= 180) || ru.includes('дом') || ru.includes('место') || ru.includes('город') || ru.includes('страна') || ru.includes('путь') || ru.includes('школа') || ru.includes('комната')) category = 'Путешествия';
+  if ((w.rank >= 129 && w.rank <= 134) || ru.includes('семья') || ru.includes('мать') || ru.includes('отец') || ru.includes('сын') || ru.includes('дочь') || ru.includes('друг') || ru.includes('ребенок') || ru.includes('жена') || ru.includes('муж')) category = 'Семья';
+  if (w.rank >= 191 && w.rank <= 224) category = 'Числа';
+  if (w.rank >= 184 && w.rank <= 190) category = 'Цвета';
   
   // Grammatical categories for remaining common words
   if (category === 'Базовые') {
     if (ru.startsWith('быть') || ru.startsWith('иметь') || ru.startsWith('делать') || ru.startsWith('мочь') || ru.startsWith('знать')) category = 'Глаголы';
-    else if (ru.endsWith('ый') || ru.endsWith('ая') || ru.endsWith('ое') || ru.endsWith('ий')) category = 'Прилагательные';
   }
 
   return {
@@ -65,12 +66,14 @@ export const words: Word[] = mostCommonWords.map(w => {
 });
 
 export const categories = [
-  { id: 'top100', name: 'Top 100', range: [1, 100], filter: null },
-  { id: 'top300', name: 'Top 300', range: [1, 300], filter: null },
-  { id: 'all', name: 'Все 500', range: [1, 500], filter: null },
+  { id: 'all', name: 'Все', range: [1, 500], filter: null },
+  { id: 'basics', name: 'Базовые', range: [1, 500], filter: 'Базовые' },
+  { id: 'food', name: 'Еда', range: [1, 500], filter: 'Еда' },
+  { id: 'travel', name: 'Путешествия', range: [1, 500], filter: 'Путешествия' },
+  { id: 'family', name: 'Семья', range: [1, 500], filter: 'Семья' },
+  { id: 'numbers', name: 'Числа', range: [1, 500], filter: 'Числа' },
+  { id: 'colors', name: 'Цвета', range: [1, 500], filter: 'Цвета' },
+  { id: 'verbs', name: 'Глаголы', range: [1, 500], filter: 'Глаголы' },
   { id: 'comm', name: 'Общение', range: [1, 500], filter: 'Общение' },
   { id: 'time', name: 'Время', range: [1, 500], filter: 'Время' },
-  { id: 'family', name: 'Семья', range: [1, 500], filter: 'Семья' },
-  { id: 'places', name: 'Места', range: [1, 500], filter: 'Места' },
-  { id: 'verbs', name: 'Глаголы', range: [1, 500], filter: 'Глаголы' },
 ];

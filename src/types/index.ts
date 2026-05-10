@@ -3,6 +3,7 @@ export interface Word {
   greek: string;
   transcription: string;
   russian_translation: string;
+  category?: string;
 }
 
 export interface Phrase {
