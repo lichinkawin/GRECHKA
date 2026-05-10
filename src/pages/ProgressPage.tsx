@@ -101,17 +101,46 @@ const ProgressPage: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Support Developer Card */}
+        <motion.div
+          className="bg-[var(--tg-theme-secondary-bg-color,#1a1a2e)] p-5 rounded-3xl border border-[var(--tg-theme-button-color,#6c63ff)]/30 mt-6"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="text-3xl">☕️</div>
+            <h3 className="text-lg font-bold text-white">Поддержать проект</h3>
+          </div>
+          <p className="text-sm text-hint leading-relaxed mb-4">
+            Гречка делается с любовью и всегда будет бесплатной. Если вам нравится приложение, вы можете угостить разработчика кофе и поддержать выход новых уроков! ❤️
+          </p>
+          <button
+            onClick={() => {
+              const webApp = (window as any).Telegram?.WebApp;
+              if (webApp?.showAlert) {
+                webApp.showAlert('Функция донатов (Telegram Stars) скоро появится!');
+              } else {
+                alert('Функция донатов (Telegram Stars) скоро появится!');
+              }
+            }}
+            className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform"
+          >
+            🌟 Отправить донат
+          </button>
+        </motion.div>
+
         {/* Reset button */}
         {known > 0 && (
           <motion.button
             id="btn-reset-progress"
-            className="btn-primary"
+            className="btn-primary mt-6"
             onClick={resetProgress}
             aria-label="Сбросить прогресс"
             style={{ background: 'rgba(239,68,68,0.15)', color: 'var(--color-review)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
           >
             Сбросить прогресс
           </motion.button>
