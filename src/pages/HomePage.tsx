@@ -18,13 +18,13 @@ const HomePage: React.FC = () => {
 
   const handleStartSession = () => {
     haptic('medium');
-    setTab('explore'); // Or wherever the active learning session starts
+    setTab('session');
   };
 
   const handleReviewWeak = () => {
     if (weakWordsCount === 0) return;
     haptic('medium');
-    setTab('explore'); // Route to specific weak words session if applicable
+    setTab('session');
   };
 
   return (
@@ -87,7 +87,7 @@ const HomePage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4">
           <motion.button 
             whileTap={{ scale: 0.95 }}
-            onClick={() => { haptic('light'); setTab('explore'); }}
+            onClick={() => { haptic('light'); setTab('session'); }}
             className="flex flex-col items-start p-5 bg-[var(--tg-theme-secondary-bg-color,#1a1a2e)] rounded-3xl border-2 border-white/5 active:border-[var(--tg-theme-button-color,#6c63ff)] transition-colors text-left"
           >
             <div className="text-4xl mb-3">📚</div>

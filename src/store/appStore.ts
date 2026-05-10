@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type Tab = 'home' | 'explore' | 'phrases' | 'exercises' | 'progress';
+type Tab = 'home' | 'explore' | 'phrases' | 'exercises' | 'progress' | 'session';
 
 interface AppStore {
   activeTab: Tab;
